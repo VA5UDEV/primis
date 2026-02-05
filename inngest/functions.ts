@@ -11,25 +11,22 @@ export const demoGenerate = inngest.createFunction(
   async ({ event, step }) => {
     const { prompt } = event.data as { prompt: string };
 
-    const urls = (await step.run("extract-urls", async () => {
-      return prompt.match(URL_REGEX) || [];
+    const urls = (await step.run("exctract-urls", async () => {
+      return prompt.match(URL_REGEX) ?? [];
     })) as string[];
 
     const scrapedContent = await step.run("scrape-urls", async () => {
       const results = await Promise.all(
         urls.map(async (url) => {
-          const results = await firecrawl.scrape(url, {
-            formats: ["markdown"],
-          });
-          return results.markdown ?? null;
+          const result = await firecrawl.scrape(url, { formats: ["markdown"] });
+          return result.markdown ?? null;
         }),
       );
-
       return results.filter(Boolean).join("\n\n");
     });
 
     const finalPrompt = scrapedContent
-      ? `Context:\n${scrapedContent}\n\nQuestion: \n${prompt}`
+      ? `Context:\n${scrapedContent}\n\nQuestion: ${prompt}`
       : prompt;
 
     await step.run("generate-text", async () => {
@@ -42,6 +39,16 @@ export const demoGenerate = inngest.createFunction(
           recordOutputs: true,
         },
       });
+    });
+  },
+);
+
+export const demoError = inngest.createFunction(
+  { id: "demo-error" },
+  { event: "demo/error" },
+  async ({ step }) => {
+    await step.run("fail", async () => {
+      throw new Error("Inngest error: Background job failed!");
     });
   },
 );
