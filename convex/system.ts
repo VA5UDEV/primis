@@ -3,10 +3,10 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 const validateInternalKey = (key: string) => {
-  const internalKey = process.env.POLARIS_CONVEX_INTERNAL_KEY;
+  const internalKey = process.env.PRIMIS_CONVEX_INTERNAL_KEY;
 
   if (!internalKey) {
-    throw new Error("POLARIS_CONVEX_INTERNAL_KEY is not configured");
+    throw new Error("PRIMIS_CONVEX_INTERNAL_KEY is not configured");
   }
 
   if (key !== internalKey) {
@@ -598,5 +598,33 @@ export const createProject = mutation({
     });
 
     return projectId;
+  },
+});
+
+export const createProjectWithConversation = mutation({
+  args: {
+    internalKey: v.string(),
+    projectName: v.string(),
+    conversationTitle: v.string(),
+    ownerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    validateInternalKey(args.internalKey);
+
+    const now = Date.now();
+
+    const projectId = await ctx.db.insert("projects", {
+      name: args.projectName,
+      ownerId: args.ownerId,
+      updatedAt: now,
+    });
+
+    const conversationId = await ctx.db.insert("conversations", {
+      projectId,
+      title: args.conversationTitle,
+      updatedAt: now,
+    });
+
+    return { projectId, conversationId };
   },
 });
