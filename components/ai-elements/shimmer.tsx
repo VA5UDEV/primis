@@ -1,36 +1,23 @@
+/* eslint-disable react-hooks/static-components */
 "use client";
-
-import type { MotionProps } from "motion/react";
-import type { CSSProperties, ElementType, JSX } from "react";
 
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
-import { memo, useMemo } from "react";
+import {
+  type CSSProperties,
+  type ElementType,
+  type JSX,
+  memo,
+  useMemo,
+} from "react";
 
-type MotionHTMLProps = MotionProps & Record<string, unknown>;
-
-// Cache motion components at module level to avoid creating during render
-const motionComponentCache = new Map<
-  keyof JSX.IntrinsicElements,
-  React.ComponentType<MotionHTMLProps>
->();
-
-const getMotionComponent = (element: keyof JSX.IntrinsicElements) => {
-  let component = motionComponentCache.get(element);
-  if (!component) {
-    component = motion.create(element);
-    motionComponentCache.set(element, component);
-  }
-  return component;
-};
-
-export interface TextShimmerProps {
+export type TextShimmerProps = {
   children: string;
   as?: ElementType;
   className?: string;
   duration?: number;
   spread?: number;
-}
+};
 
 const ShimmerComponent = ({
   children,
@@ -39,13 +26,13 @@ const ShimmerComponent = ({
   duration = 2,
   spread = 2,
 }: TextShimmerProps) => {
-  const MotionComponent = getMotionComponent(
-    Component as keyof JSX.IntrinsicElements
+  const MotionComponent = motion.create(
+    Component as keyof JSX.IntrinsicElements,
   );
 
   const dynamicSpread = useMemo(
     () => (children?.length ?? 0) * spread,
-    [children, spread]
+    [children, spread],
   );
 
   return (
@@ -54,7 +41,7 @@ const ShimmerComponent = ({
       className={cn(
         "relative inline-block bg-[length:250%_100%,auto] bg-clip-text text-transparent",
         "[--bg:linear-gradient(90deg,#0000_calc(50%-var(--spread)),var(--color-background),#0000_calc(50%+var(--spread)))] [background-repeat:no-repeat,padding-box]",
-        className
+        className,
       )}
       initial={{ backgroundPosition: "100% center" }}
       style={
@@ -65,9 +52,9 @@ const ShimmerComponent = ({
         } as CSSProperties
       }
       transition={{
+        repeat: Number.POSITIVE_INFINITY,
         duration,
         ease: "linear",
-        repeat: Number.POSITIVE_INFINITY,
       }}
     >
       {children}

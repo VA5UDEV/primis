@@ -190,7 +190,7 @@ export const ConversationSidebar = ({
           <PromptInput onSubmit={handleSubmit} className="mt-2">
             <PromptInputBody>
               <PromptInputTextarea
-                placeholder="Ask Polaris anything..."
+                placeholder="Ask Primis anything..."
                 onChange={(e) => setInput(e.target.value)}
                 value={input}
                 disabled={isProcessing}
